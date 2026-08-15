@@ -1,0 +1,26 @@
+# dependencies / build
+node_modules/
+web/node_modules/
+web/.next/
+web/out/
+web/build/
+web/.vercel/
+
+# env & secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+web/.env.local
+
+# local migration dumps / temp PDFs
+web/.migrate-export/
+web/tmp-*.pdf
+*.tsbuildinfo
+web/next-env.d.ts
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,5 @@
+# Supabase local/project config for RLE Quotation Maker
+project_id = "kamwbhwioivuosumzrkv"
+
+[functions.send-followup-reminders]
+verify_jwt = false
