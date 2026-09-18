@@ -1,0 +1,35 @@
+name: Ping Supabase
+description: Ping Supabase Auth + REST with retries to keep a free-tier project awake
+
+inputs:
+  supabase_url:
+    description: Supabase project URL (https://xxxx.supabase.co)
+    required: true
+  supabase_anon_key:
+    description: Supabase anon (publishable) key
+    required: true
+  attempts:
+    description: How many times to try before failing
+    required: false
+    default: "3"
+  delay_seconds:
+    description: Seconds to wait between retries
+    required: false
+    default: "20"
+  label:
+    description: Log label for this ping source (A/B/C)
+    required: false
+    default: "keepalive"
+
+runs:
+  using: composite
+  steps:
+    - name: Ping Supabase (retry on failure)
+      shell: bash
+      env:
+        SUPABASE_URL: ${{ inputs.supabase_url }}
+        SUPABASE_ANON_KEY: ${{ inputs.supabase_anon_key }}
+        ATTEMPTS: ${{ inputs.attempts }}
+        DELAY_SECONDS: ${{ inputs.delay_seconds }}
+        LABEL: ${{ inputs.label }}
+      run: bash "${{ github.workspace }}/.github/scripts/ping-supabase.sh"

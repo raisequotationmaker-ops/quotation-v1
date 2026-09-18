@@ -1,0 +1,53 @@
+# Keepalive C — last-resort automation.
+# Runs ONLY when Keepalive B fails (so A and B both failed to keep Supabase up).
+name: Supabase Keepalive C
+
+on:
+  workflow_run:
+    workflows: ["Supabase Keepalive B"]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-keepalive-c
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    name: Ping C
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # workflow_run: only when B failed. workflow_dispatch: always allow manual.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'failure'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log trigger
+        run: |
+          echo "event=${{ github.event_name }}"
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "B conclusion=${{ github.event.workflow_run.conclusion }}"
+            echo "B run id=${{ github.event.workflow_run.id }}"
+          fi
+
+      - name: Require secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Add repository secrets SUPABASE_URL and SUPABASE_ANON_KEY"
+            exit 1
+          fi
+
+      - name: Ping Supabase (C)
+        uses: ./.github/actions/ping-supabase
+        with:
+          supabase_url: ${{ secrets.SUPABASE_URL }}
+          supabase_anon_key: ${{ secrets.SUPABASE_ANON_KEY }}
+          attempts: "4"
+          delay_seconds: "30"
+          label: "C"
