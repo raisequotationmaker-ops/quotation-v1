@@ -1,11 +1,11 @@
-# Keepalive A — primary ping (twice daily). Retries on failure.
-# If this workflow fails, Keepalive B is triggered via workflow_run.
+# Keepalive A — morning ping (06:00 IST / 00:30 UTC). Retries on failure.
+# If this workflow fails, Keepalive C is triggered.
 name: Supabase Keepalive A
 
 on:
   schedule:
-    # 06:00 and 18:00 UTC → 11:30 and 23:30 IST
-    - cron: "0 6,18 * * *"
+    # 06:00 IST = 00:30 UTC
+    - cron: "30 0 * * *"
   workflow_dispatch:
 
 concurrency:

@@ -1,10 +1,12 @@
-# Keepalive C — last-resort automation.
-# Runs ONLY when Keepalive B fails (so A and B both failed to keep Supabase up).
+# Keepalive C — failover only.
+# Runs when Keepalive A OR Keepalive B fails.
 name: Supabase Keepalive C
 
 on:
   workflow_run:
-    workflows: ["Supabase Keepalive B"]
+    workflows:
+      - Supabase Keepalive A
+      - Supabase Keepalive B
     types: [completed]
   workflow_dispatch:
 
@@ -17,7 +19,7 @@ jobs:
     name: Ping C
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # workflow_run: only when B failed. workflow_dispatch: always allow manual.
+    # Only when A or B failed. Manual dispatch always allowed.
     if: >
       github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'failure'
@@ -29,8 +31,9 @@ jobs:
         run: |
           echo "event=${{ github.event_name }}"
           if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            echo "B conclusion=${{ github.event.workflow_run.conclusion }}"
-            echo "B run id=${{ github.event.workflow_run.id }}"
+            echo "failed_workflow=${{ github.event.workflow_run.name }}"
+            echo "conclusion=${{ github.event.workflow_run.conclusion }}"
+            echo "run_id=${{ github.event.workflow_run.id }}"
           fi
 
       - name: Require secrets
